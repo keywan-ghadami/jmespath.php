@@ -30,15 +30,15 @@ using the ``mtdowling/jmespath.php`` package.
 - `JMESPath Python library <https://github.com/jmespath/jmespath.py>`_
 
 Additional Features
--------------------
+===================
 
 The following features have been added to this fork.
 
 Arithmetic Operators
-~~~~~~~~~~~~~~~~~~~~
+--------------------
 
-The following operators are supported: `+` (addition), `-` (substraction),
-`*` (multiplication), `/` (division) and `%` (modulo).
+The following operators are supported: ``+`` (addition), ``-`` (substraction),
+``*`` (multiplication), ``/`` (division) and ``%`` (modulo).
 
 .. code-block:: php
 
@@ -46,9 +46,9 @@ The following operators are supported: `+` (addition), `-` (substraction),
     // Returns: 400
 
 Root reference
-~~~~~~~~~~~~~~
+--------------
 
-Use `$` to reference to the root anywhere in an expression.
+Use ``$`` to reference to the root of the data anywhere in an expression.
 
 .. code-block:: php
 
