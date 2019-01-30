@@ -53,7 +53,7 @@ class TreeInterpreter
             case 'field':
                 if (is_array($value) || $value instanceof \ArrayAccess) {
                     return isset($value[$node['value']]) ? $value[$node['value']] : null;
-                } elseif ($value instanceof \stdClass) {
+                } elseif (is_object($value)) {
                     return isset($value->{$node['value']}) ? $value->{$node['value']} : null;
                 }
                 return null;                      
