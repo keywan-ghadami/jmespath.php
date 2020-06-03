@@ -1,12 +1,13 @@
 ============
-jmespath.php
+path expression language for php 
 ============
 
-JMESPath (pronounced 'jaymz path') allows you to declaratively specify how to
-extract elements from a JSON document. *jmespath.php* allows you to use
-JMESPath in PHP applications with PHP data structures. It requires PHP 5.4 or
+*path expression language for php* allows you to use 
+Jsonpath/JMESPath smoothly inside your expressions inside PHP applications with PHP data structures. It requires PHP 5.4 or
 greater and can be installed through `Composer <http://getcomposer.org/doc/00-intro.md>`_
-using the ``mtdowling/jmespath.php`` package.
+using the ``?/?``(TODO release on packagist.org) package.
+
+It is based on JMESPath with some minor extensions to make it a powerful expression languange.
 
 .. code-block:: php
 
