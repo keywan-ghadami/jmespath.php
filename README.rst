@@ -3,7 +3,7 @@ path expression language for php
 ============
 
 *path expression language for php* allows you to use 
-Jsonpath/JMESPath smoothly inside your expressions inside PHP applications with PHP data structures. It requires PHP 5.4 or
+JMESPath smoothly inside your expressions inside PHP applications with PHP data structures. It requires PHP 5.4 or
 greater and can be installed through `Composer <http://getcomposer.org/doc/00-intro.md>`_
 using the ``?/?``(TODO release on packagist.org) package.
 
