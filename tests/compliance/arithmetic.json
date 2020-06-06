@@ -53,6 +53,20 @@
         {
             "expression": "([*].foo)[0] * ([*].foo)[1] + ([*].bar)[0]",
             "result": 5
+        },
+        {
+            "expression": "[0].foo",
+            "result": 1
+        },
+        {
+            "expression": "[1+1].foo",
+            "result": 2
+        },
+        {
+            "expression": "[($[2].bar - 1)].foo",
+            "result": 2
         }
+
+
     ]
 }]
