@@ -75,7 +75,15 @@
         "result": [{"age": 20}]
       },
       {
+        "expression": "foo[?age == 20]",
+        "result": [{"age": 20}]
+      },
+      {
         "expression": "foo[?age != `20`]",
+        "result": [{"age": 25}, {"age": 30}]
+      },
+      {
+        "expression": "foo[?age != 20]",
         "result": [{"age": 25}, {"age": 30}]
       }
     ]
