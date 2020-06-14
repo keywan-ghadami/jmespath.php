@@ -242,11 +242,15 @@ class Parser
         if ($this->token['type'] == T::T_STAR) {
             return $this->parseWildcardArray($left);
         }
-        return [
+        res = [
                     'type' => 'indexsubexpression',
                     'children' => [$left, $this->expr(self::$bp[T::T_LBRACKET])]
-                ];          
-        
+                ];
+        if ($this->token['type'] !== T::T_RPAREN) {
+            throw $this->syntax('Unclosed `[`');
+        }    
+        $this->next();
+        return $res;
     }
 
     private function led_flatten(array $left)
