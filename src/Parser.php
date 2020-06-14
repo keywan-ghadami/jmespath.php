@@ -209,15 +209,8 @@ class Parser
 
     private function nud_lbracket()
     {
-        $this->next();
-        $type = $this->token['type'];
-        if ($type == T::T_NUMBER || $type == T::T_COLON) {
-            return $this->parseArrayIndexExpression();
-        } elseif ($type == T::T_STAR && $this->lookahead() == T::T_RBRACKET) {
-            return $this->parseWildcardArray();
-        } else {
-            return $this->parseMultiSelectList();
-        }
+        $this->next();      
+        return $this->parseMultiSelectList();        
     }
 
     private function led_arithmetic_plus_or_minus(array $left) {
@@ -244,18 +237,16 @@ class Parser
 
     private function led_lbracket(array $left)
     {
-        static $nextTypes = [T::T_NUMBER => true, T::T_COLON => true, T::T_STAR => true];
-        $this->next($nextTypes);
-        switch ($this->token['type']) {
-            case T::T_NUMBER:
-            case T::T_COLON:
-                return [
-                    'type' => 'subexpression',
-                    'children' => [$left, $this->parseArrayIndexExpression()]
-                ];
-            default:
-                return $this->parseWildcardArray($left);
+        $token = $this->token;
+        $this->next();
+        if ($this->token['type'] == T::T_STAR) {
+            return $this->parseWildcardArray($left);
         }
+        return [
+                    'type' => 'indexsubexpression',
+                    'children' => [$left, $this->expr(self::$bp[T::T_LBRACKET])]
+                ];          
+        
     }
 
     private function led_flatten(array $left)
