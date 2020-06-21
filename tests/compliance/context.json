@@ -30,7 +30,7 @@
     "cases": [
         {
             "expression": "friends.3.name",
-            "result": ""
+            "result": "Joe"
         },
         {
             "expression": "friends[1+1].name",

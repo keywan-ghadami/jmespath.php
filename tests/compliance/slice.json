@@ -128,8 +128,17 @@
     },
     {
       "expression": "foo[2:a:3]",
-      "error": "syntax"
+      "result": [2, 5, 8]
+    },
+    {
+      "expression": "foo[2:@[6]:1]",
+      "result": [2, 3, 4, 5]
+    },
+    {
+      "expression": "foo[1+1-1:@[5]-2:1]",
+      "result": [1, 2]
     }
+
   ]
 }, {
   "given": {

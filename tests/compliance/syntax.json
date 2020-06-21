@@ -12,11 +12,11 @@
     },
     {
       "expression": "foo.1",
-      "error": "syntax"
+      "result": null
     },
     {
       "expression": "foo.-11",
-      "error": "syntax"
+      "result": null
     },
     {
       "expression": "foo.",
@@ -205,10 +205,14 @@
     "cases": [
       {
         "expression": "[0]",
-        "result": null
+        "result": [0]
       },
       {
         "expression": "[*]",
+        "error": "syntax"
+      },
+      {
+        "expression": "$[*]",
         "result": null
       },
       {
@@ -220,11 +224,11 @@
         "result": [[null]]
       },
       {
-        "expression": "[*].bar",
+        "expression": "$[*].bar",
         "result": null
       },
       {
-        "expression": "[*][0]",
+        "expression": "$[*][0]",
         "result": null
       },
       {
@@ -243,14 +247,14 @@
     "given": {},
     "cases": [
       {
-        "comment": "slice expected colon or rbracket",
+        "comment": "array range not yet supported",
         "expression": "[:@]",
         "error": "syntax"
       },
       {
         "comment": "slice expected colon or rbracket",
         "expression": "$[:@]",
-        "error": "syntax"
+        "result": [],
       },
       {
         "comment": "slice has too many colons",

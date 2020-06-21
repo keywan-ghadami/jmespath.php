@@ -107,6 +107,23 @@ class Parser
         return $left;
     }
 
+    /**
+     * Parses an expression while rbp < lbp.
+     *
+     * @param int   $rbp  Right bound precedence
+     *
+     * @return array
+     */
+    private function led_subExpr($rbp = 0)
+    {
+        $left = $this->{"led_{$this->token['type']}"}(self::$currentNode);
+        while ($rbp < self::$bp[$this->token['type']]) {
+            $left = $this->{"led_{$this->token['type']}"}($left);
+        }
+
+        return $left;
+    }
+
     private function nud_root()
     {
         $token = $this->token;
@@ -250,11 +267,12 @@ class Parser
     private function led_lbracket(array $left)
     {
         $this->next();
-        if ($this->token['type'] == T::T_STAR) {
+        $type1 = $this->token['type'];
+        if ($type1 == T::T_STAR) {
             return $this->parseWildcardArray($left);
         }
         ;
-        $nextExpr = $this->expr(0);
+        $nextExpr = $type1 === T::T_COLON ? null : $this->expr(0);
         $right = [
             'type' => 'index',
             'children' => [$nextExpr]
@@ -263,12 +281,17 @@ class Parser
         if ($this->token['type'] === T::T_COLON) {
             $parts[] = $nextExpr;
             $this->next();
-            $parts[] = $this->token['type'] === T::T_COLON ? null : $this->expr(self::$bp[T::T_LBRACKET]);
+            $type2 = $this->token['type'];
+            $parts[] = ($type2 === T::T_COLON || $type2 === T::T_RBRACKET) ? null : $this->expr
+            (0);
             if ($this->token['type'] === T::T_COLON) {
                 $this->next();
-                $parts[] = $this->expr(self::$bp[T::T_LBRACKET]);
+                $parts[] = $this->token['type'] === T::T_RBRACKET ? null : $this->expr(0);
             }
-
+            if ($this->token['type'] !== T::T_RBRACKET) {
+                throw $this->syntax('Unclosed `[`');
+            }
+            $this->next();
             $right = [
                 'type'     => 'projection',
                 'from'     => 'array',
@@ -277,6 +300,12 @@ class Parser
                     $this->parseProjection(self::$bp[T::T_STAR])
                 ]
             ];
+        } else {
+            if ($this->token['type'] !== T::T_RBRACKET) {
+                throw $this->syntax('Unclosed `[`');
+            }
+            $this->next();
+
         }
         $res = [
             'type' => 'subexpression',
@@ -286,10 +315,6 @@ class Parser
             ]
         ];
 
-        if ($this->token['type'] !== T::T_RBRACKET) {
-            throw $this->syntax('Unclosed `[`');
-        }
-        $this->next();
         return $res;
     }
 
@@ -315,9 +340,14 @@ class Parser
             return $this->parseWildcardObject($left);
         }
 
+        $right = $this->parseDot(self::$bp[T::T_DOT]);
+        if ($right['type'] == 'number') {
+            $right['type'] = 'field';
+        }
+
         return [
             'type'     => 'subexpression',
-            'children' => [$left, $this->parseDot(self::$bp[T::T_DOT])]
+            'children' => [$left, $right]
         ];
     }
 
@@ -414,7 +444,7 @@ class Parser
             $this->next(self::$afterDot);
             return $this->parseDot($bp);
         } elseif ($type == T::T_LBRACKET || $type == T::T_FILTER) {
-            return $this->expr($bp);
+            return $this->led_subExpr($bp);
         }
 
         throw $this->syntax('Syntax error after projection');

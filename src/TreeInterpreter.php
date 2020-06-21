@@ -47,7 +47,9 @@ class TreeInterpreter
         $dispatcher = $this->fnDispatcher;
 
         $nodeValue = isset($node['value']) ? $node['value'] : null;
-        switch ($node['type']) {
+        $nodeType = $node['type'];
+
+        switch ($nodeType) {
             case 'root':
                 return $this->root;
 
@@ -57,8 +59,7 @@ class TreeInterpreter
                 } elseif (is_object($value)) {
                     return isset($value->{$nodeValue}) ? $value->{$nodeValue} : null;
                 }
-                return null;                      
-
+                return null;
             case 'subexpression':
                 $subExprResultValue = $this->dispatch($node['children'][0], $value);
                 return $this->dispatch($node['children'][1], $subExprResultValue);
@@ -234,8 +235,8 @@ class TreeInterpreter
                 return $dispatcher($nodeValue, $args);
 
             case 'slice':
-                $from = $this->dispatch($node['children'][0], $value);
-                $to = $this->dispatch($node['children'][1], $value);
+                $from = isset($node['children'][0]) ? $this->dispatch($node['children'][0], $value) : null;
+                $to = isset($node['children'][1]) ? $this->dispatch($node['children'][1], $value) : null;
 
                 $step = isset($node['children'][2]) ? $this->dispatch($node['children'][2], $value) : 1;
 
