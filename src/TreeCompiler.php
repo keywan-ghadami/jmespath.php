@@ -179,23 +179,16 @@ class TreeCompiler
 
     private function visit_index(array $node)
     {
-        $res = $this->dispatch($node['children'][0]);
-
-        if ($node['value'] >= 0) {
-            $check = '$value[' . $node['value'] . ']';
-            return $this->write(
-                '$value = (is_array($value) || $value instanceof \\ArrayAccess)'
-                    . ' && isset(%s) ? %s : null;',
-                $check, $check
-            );
-        }
-
-        $a = $this->makeVar('count');
+        $index = $this->makeVar('index');
+        $array = $this->makeVar('array');
         return $this
             ->write('if (is_array($value) || ($value instanceof \\ArrayAccess && $value instanceof \\Countable)) {')
                 ->indent()
-                ->write('%s = count($value) + %s;', $a, $node['value'])
-                ->write('$value = isset($value[%s]) ? $value[%s] : null;', $a, $a)
+                ->write('%s = $value;', $array)
+                ->dispatch($node['children'][0])
+                ->write("$index = \$value;")
+                ->write("$index = $index < 0 ? count($array) + $index : $index;")
+                ->write("\$value = isset({$array}[{$index}]) ? {$array}[{$index}] : null;")
                 ->outdent()
             ->write('} else {')
                 ->indent()
