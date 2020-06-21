@@ -1,15 +1,5 @@
 [
   {
-    "comment": "Number access not yet supported",
-    "given": [[],[],[],[{"a": "a"},{"b": "b"}]],
-    "cases": [
-      {
-        "expression": "$.3.1",
-        "error": "syntax"
-      }
-    ]
-  },
-  {
     "given":
         {"foo": {"bar": {"baz": "correct"}}},
      "cases": [

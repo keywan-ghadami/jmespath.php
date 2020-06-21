@@ -179,6 +179,8 @@ class TreeCompiler
 
     private function visit_index(array $node)
     {
+        $res = $this->dispatch($node['children'][0]);
+
         if ($node['value'] >= 0) {
             $check = '$value[' . $node['value'] . ']';
             return $this->write(

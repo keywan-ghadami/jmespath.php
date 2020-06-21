@@ -248,18 +248,33 @@
         "error": "syntax"
       },
       {
+        "comment": "slice expected colon or rbracket",
+        "expression": "$[:@]",
+        "error": "syntax"
+      },
+      {
         "comment": "slice has too many colons",
-        "expression": "[:::]",
+        "expression": "$[:::]",
+        "error": "syntax"
+      },
+      {
+        "comment": "slice in a array",
+        "expression": "[:]",
         "error": "syntax"
       },
       {
         "comment": "slice expected number",
-        "expression": "[:@:]",
+        "expression": "$[:@:]",
         "error": "syntax"
       },
       {
         "comment": "slice expected number of colon",
-        "expression": "[:1@]",
+        "expression": "$[:1@]",
+        "error": "syntax"
+      },
+      {
+        "comment": "Nested Array with wildcard ",
+        "expression": "[[*],*]",
         "error": "syntax"
       }
     ]

@@ -46,32 +46,35 @@ class TreeInterpreter
     {
         $dispatcher = $this->fnDispatcher;
 
+        $nodeValue = isset($node['value']) ? $node['value'] : null;
         switch ($node['type']) {
             case 'root':
                 return $this->root;
 
             case 'field':
                 if (is_array($value) || $value instanceof \ArrayAccess) {
-                    return isset($value[$node['value']]) ? $value[$node['value']] : null;
+                    return isset($value[$nodeValue]) ? $value[$nodeValue] : null;
                 } elseif (is_object($value)) {
-                    return isset($value->{$node['value']}) ? $value->{$node['value']} : null;
+                    return isset($value->{$nodeValue}) ? $value->{$nodeValue} : null;
                 }
                 return null;                      
 
             case 'subexpression':
-                return $this->dispatch(
-                    $node['children'][1],
-                    $this->dispatch($node['children'][0], $value)
-                );
+                $subExprResultValue = $this->dispatch($node['children'][0], $value);
+                return $this->dispatch($node['children'][1], $subExprResultValue);
 
             case 'index':
-                if (!Utils::isArray($value)) {
-                    return null;
+                $nodeValue = $this->dispatch($node['children'][0], $value);
+
+                if (is_array($value) || $value instanceof \ArrayAccess) {
+                    $nodeValue = $nodeValue >= 0
+                        ? $nodeValue
+                        : $nodeValue + count($value);
+                    return isset($value[$nodeValue]) ? $value[$nodeValue] : null;
+                } elseif (is_object($value)) {
+                    return isset($value->{$nodeValue}) ? $value->{$nodeValue} : null;
                 }
-                $idx = $node['value'] >= 0
-                    ? $node['value']
-                    : $node['value'] + count($value);
-                return isset($value[$idx]) ? $value[$idx] : null;
+                return null;
 
             case 'projection':
                 $left = $this->dispatch($node['children'][0], $value);
@@ -123,10 +126,10 @@ class TreeInterpreter
                 return $merged;
 
             case 'literal':
-                return $node['value'];
+                return $nodeValue;
                 
             case 'number':
-                return $node['value'];
+                return $nodeValue;
 
             case 'current':
                 return $value;
@@ -173,7 +176,9 @@ class TreeInterpreter
 
                 $collected = [];
                 foreach ($node['children'] as $node) {
-                    $collected[$node['value']] = $this->dispatch(
+                    $nodeValue = isset($node['value']) ? $node['value'] : null;
+
+                    $collected[$nodeValue] = $this->dispatch(
                         $node['children'][0],
                         $value
                     );
@@ -184,23 +189,23 @@ class TreeInterpreter
             case 'comparator':
                 $left = $this->dispatch($node['children'][0], $value);
                 $right = $this->dispatch($node['children'][1], $value);
-                if ($node['value'] == '==') {
+                if ($nodeValue == '==') {
                     return Utils::isEqual($left, $right);
-                } elseif ($node['value'] == '!=') {
+                } elseif ($nodeValue == '!=') {
                     return !Utils::isEqual($left, $right);
                 } else {
-                    return self::relativeCmp($left, $right, $node['value']);
+                    return self::relativeCmp($left, $right, $nodeValue);
                 }            
 
             case 'arithmetic_multiply_or_divide_or_mod':
                 $left = $this->dispatch($node['children'][0], $value);
                 $right = $this->dispatch($node['children'][1], $value);
 
-                if ($node['value'] == '*') {
+                if ($nodeValue == '*') {
                     return $left * $right;
-                } elseif ($node['value'] == '/') {
+                } elseif ($nodeValue == '/') {
                     return $left / $right;
-                } elseif ($node['value'] == '%') {
+                } elseif ($nodeValue == '%') {
                     return $left % $right;
                 }
                 return 0;
@@ -209,9 +214,9 @@ class TreeInterpreter
                 $left = $this->dispatch($node['children'][0], $value);
                 $right = $this->dispatch($node['children'][1], $value);
 
-                if ($node['value'] == '+') {
+                if ($nodeValue == '+') {
                     return $left + $right;
-                } elseif ($node['value'] == '-') {
+                } elseif ($nodeValue == '-') {
                     return $left - $right;
                 }
                 return 0;
@@ -226,15 +231,20 @@ class TreeInterpreter
                 foreach ($node['children'] as $arg) {
                     $args[] = $this->dispatch($arg, $value);
                 }
-                return $dispatcher($node['value'], $args);
+                return $dispatcher($nodeValue, $args);
 
             case 'slice':
+                $from = $this->dispatch($node['children'][0], $value);
+                $to = $this->dispatch($node['children'][1], $value);
+
+                $step = isset($node['children'][2]) ? $this->dispatch($node['children'][2], $value) : 1;
+
                 return is_string($value) || Utils::isArray($value)
                     ? Utils::slice(
                         $value,
-                        $node['value'][0],
-                        $node['value'][1],
-                        $node['value'][2]
+                        $from,
+                        $to,
+                        $step
                     ) : null;
 
             case 'expref':

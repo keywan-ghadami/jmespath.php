@@ -375,7 +375,7 @@
     "cases": [
         {
           "comment": "Nested multiselect",
-          "expression": "[[*],*]",
+          "expression": "[$[*],*]",
           "result": [null, ["object"]]
         }
     ]
@@ -385,7 +385,7 @@
     "cases": [
         {
           "comment": "Nested multiselect",
-          "expression": "[[*]]",
+          "expression": "[$[*]]",
           "result": [[]]
         },
         {

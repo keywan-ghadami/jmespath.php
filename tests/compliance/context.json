@@ -1,0 +1,40 @@
+[{
+    "given": {
+        "person": {
+            "name": "Bob",
+            "age": 20
+        },
+        "friends": [
+            {
+                "name": "Anna",
+                "age": 19
+            },
+            {
+                "name": "Fred",
+                "age": 18
+            },
+            {
+                "name": "Alice",
+                "age": 19
+            },
+            {
+                "name": "Joe",
+                "age": 21
+            }
+        ],
+        "partner": {
+            "name": "Luise",
+            "age": 20
+        }
+    },
+    "cases": [
+        {
+            "expression": "friends.3.name",
+            "result": ""
+        },
+        {
+            "expression": "friends[1+1].name",
+            "result": "Alice"
+        }
+    ]
+}]

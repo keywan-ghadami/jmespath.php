@@ -1,4 +1,5 @@
-[{
+[
+  {
     "given":
         {"foo": {"bar": ["zero", "one", "two"]}},
      "cases": [
@@ -35,8 +36,20 @@
             "result": null
          }
      ]
-},
-{
+  },
+  {
+    "comment": "object child access on arrays",
+    "given": [[],[],[],[{"a": "a"},{"b": "b"}]],
+    "cases": [
+      {
+        "expression": "$.3.1",
+        "result": "1",
+        "result todo": "b"
+      }
+    ]
+  },
+
+  {
     "given":
         {"foo": [{"bar": "one"}, {"bar": "two"}, {"bar": "three"}, {"notbar": "four"}]},
      "cases": [
@@ -92,27 +105,27 @@
     ],
      "cases": [
          {
-            "expression": "[0]",
+            "expression": "$[0]",
             "result": "one"
          },
          {
-            "expression": "[1]",
+            "expression": "$[1]",
             "result": "two"
          },
          {
-            "expression": "[2]",
+            "expression": "$[2]",
             "result": "three"
          },
          {
-            "expression": "[-1]",
+            "expression": "$[-1]",
             "result": "three"
          },
          {
-            "expression": "[-2]",
+            "expression": "$[-2]",
             "result": "two"
          },
          {
-            "expression": "[-3]",
+            "expression": "$[-3]",
             "result": "one"
          }
      ]

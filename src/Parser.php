@@ -55,6 +55,8 @@ class Parser
         T::T_LBRACE            => true, // foo[1]
         T::T_LBRACKET          => true, // foo{a: 0}
         T::T_FILTER            => true, // foo.[?bar==10]
+        T::T_NUMBER            => true,
+        T::T_LPAREN            => true
     ];
 
     /**
@@ -209,8 +211,18 @@ class Parser
 
     private function nud_lbracket()
     {
-        $this->next();      
-        return $this->parseMultiSelectList();        
+        $this->next();
+        $type = $this->token['type'];
+        if ($type == T::T_COLON) {
+            //echo "warn this is a array because root ($) is missing\n";
+            //return $this->parseArrayIndexExpression();
+            $this->syntax("creating a array range is not yet supported");
+        } elseif ($type == T::T_STAR && $this->lookahead() == T::T_RBRACKET) {
+            $this->syntax("wildcard can not be used inside a array");
+           // return $this->parseWildcardArray();
+        } else {
+            return $this->parseMultiSelectList();
+        }
     }
 
     private function led_arithmetic_plus_or_minus(array $left) {
@@ -237,18 +249,46 @@ class Parser
 
     private function led_lbracket(array $left)
     {
-        $token = $this->token;
         $this->next();
         if ($this->token['type'] == T::T_STAR) {
             return $this->parseWildcardArray($left);
         }
-        res = [
-                    'type' => 'indexsubexpression',
-                    'children' => [$left, $this->expr(self::$bp[T::T_LBRACKET])]
-                ];
-        if ($this->token['type'] !== T::T_RPAREN) {
+        ;
+        $nextExpr = $this->expr(0);
+        $right = [
+            'type' => 'index',
+            'children' => [$nextExpr]
+        ];
+
+        if ($this->token['type'] === T::T_COLON) {
+            $parts[] = $nextExpr;
+            $this->next();
+            $parts[] = $this->token['type'] === T::T_COLON ? null : $this->expr(self::$bp[T::T_LBRACKET]);
+            if ($this->token['type'] === T::T_COLON) {
+                $this->next();
+                $parts[] = $this->expr(self::$bp[T::T_LBRACKET]);
+            }
+
+            $right = [
+                'type'     => 'projection',
+                'from'     => 'array',
+                'children' => [
+                    ['type' => 'slice', 'children' => $parts],
+                    $this->parseProjection(self::$bp[T::T_STAR])
+                ]
+            ];
+        }
+        $res = [
+            'type' => 'subexpression',
+            'children' => [
+                $left,
+                $right
+            ]
+        ];
+
+        if ($this->token['type'] !== T::T_RBRACKET) {
             throw $this->syntax('Unclosed `[`');
-        }    
+        }
         $this->next();
         return $res;
     }

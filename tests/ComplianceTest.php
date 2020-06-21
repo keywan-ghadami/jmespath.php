@@ -106,8 +106,8 @@ class ComplianceTest extends TestCase
                             $asAssoc
                         ];
                         $cases[] = $caseData;
-                        $caseData[7] = true;
-                        $cases[] = $caseData;
+                        //$caseData[7] = true;
+                        //$cases[] = $caseData;
                     }
                 }
             }

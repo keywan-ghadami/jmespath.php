@@ -20,23 +20,23 @@
   },
   "cases": [
     {
-      "expression": "foo.*.baz | [0]",
+      "expression": "foo.*.baz | $[0]",
       "result": "subkey"
     },
     {
-      "expression": "foo.*.baz | [1]",
+      "expression": "foo.*.baz | $[1]",
       "result": "subkey"
     },
     {
-      "expression": "foo.*.baz | [2]",
+      "expression": "foo.*.baz | $[2]",
       "result": "subkey"
     },
     {
-      "expression": "foo.bar.* | [0]",
+      "expression": "foo.bar.* | $[0]",
       "result": "subkey"
     },
     {
-      "expression": "foo.*.notbaz | [*]",
+      "expression": "foo.*.notbaz | $[*]",
       "result": [["a", "b", "c"], ["a", "b", "c"]]
     },
     {
@@ -78,15 +78,15 @@
       "result": "one"
     },
     {
-      "expression": "not_there | [0]",
+      "expression": "not_there | $[0]",
       "result": null
     },
     {
-      "expression": "not_there | [0]",
+      "expression": "not_there | $[0]",
       "result": null
     },
     {
-      "expression": "[foo.bar, foo.other] | [0]",
+      "expression": "[foo.bar, foo.other] | $[0]",
       "result": {"baz": "one"}
     },
     {
@@ -124,7 +124,7 @@
   },
   "cases": [
     {
-      "expression": "foo[*].bar[*] | [0][0]",
+      "expression": "foo[*].bar[*] | $[0][0]",
       "result": {"baz": "one"}
     }
   ]
