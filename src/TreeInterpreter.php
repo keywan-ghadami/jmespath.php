@@ -58,6 +58,8 @@ class TreeInterpreter
                     return isset($value[$nodeValue]) ? $value[$nodeValue] : null;
                 } elseif (is_object($value)) {
                     return isset($value->{$nodeValue}) ? $value->{$nodeValue} : null;
+                } elseif (is_numeric($value) ) {
+                    return json_decode($value . '.' . $nodeValue, true);
                 }
                 return null;
             case 'subexpression':
@@ -65,7 +67,7 @@ class TreeInterpreter
                 return $this->dispatch($node['children'][1], $subExprResultValue);
 
             case 'index':
-                $nodeValue = $this->dispatch($node['children'][0], $value);
+                $nodeValue = $this->dispatch($nodeValue, $value);
 
                 if (is_array($value) || $value instanceof \ArrayAccess) {
                     $nodeValue = $nodeValue >= 0
@@ -235,10 +237,10 @@ class TreeInterpreter
                 return $dispatcher($nodeValue, $args);
 
             case 'slice':
-                $from = isset($node['children'][0]) ? $this->dispatch($node['children'][0], $value) : null;
-                $to = isset($node['children'][1]) ? $this->dispatch($node['children'][1], $value) : null;
+                $from = $this->dispatch($node['children']['from'], $value);
+                $to = $this->dispatch($node['children']['to'], $value);
 
-                $step = isset($node['children'][2]) ? $this->dispatch($node['children'][2], $value) : 1;
+                $step = $this->dispatch($node['children']['step'], $value);
 
                 return is_string($value) || Utils::isArray($value)
                     ? Utils::slice(
@@ -247,7 +249,8 @@ class TreeInterpreter
                         $to,
                         $step
                     ) : null;
-
+            case 'null':
+                return null;
             case 'expref':
                 $apply = $node['children'][0];
                 return function ($value) use ($apply) {

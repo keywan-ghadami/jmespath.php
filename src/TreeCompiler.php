@@ -102,6 +102,11 @@ class TreeCompiler
         return $this;
     }
 
+    private function visit_null(array $node)
+    {
+        return $this->write('$value = null;');
+    }
+
     private function visit_or(array $node)
     {
         $a = $this->makeVar('beforeOr');
@@ -158,15 +163,20 @@ class TreeCompiler
 
     private function visit_field(array $node)
     {
-        $arr = '$value[' . var_export($node['value'], true) . ']';
-        $obj = '$value->{' . var_export($node['value'], true) . '}';
+        $nodeValue = var_export($node['value'], true) ;
+        $arr = '$value[' . $nodeValue. ']';
+        $obj = '$value->{' . $nodeValue . '}';
         $this->write('if (is_array($value) || $value instanceof \\ArrayAccess) {')
                 ->indent()
                 ->write('$value = isset(%s) ? %s : null;', $arr, $arr)
                 ->outdent()
-            ->write('} elseif ($value instanceof \\stdClass) {')
+            ->write('} elseif (is_object($value)) {')
                 ->indent()
                 ->write('$value = isset(%s) ? %s : null;', $obj, $obj)
+                ->outdent()
+            ->write('} elseif (is_numeric($value)) {')
+                ->indent()
+                ->write('$value = json_decode($value . \'.\' . %s, true);', $nodeValue)
                 ->outdent()
             ->write("} else {")
                 ->indent()
@@ -185,7 +195,7 @@ class TreeCompiler
             ->write('if (is_array($value) || ($value instanceof \\ArrayAccess && $value instanceof \\Countable)) {')
                 ->indent()
                 ->write('%s = $value;', $array)
-                ->dispatch($node['children'][0])
+                ->dispatch($node['value'])
                 ->write("$index = \$value;")
                 ->write("$index = $index < 0 ? count($array) + $index : $index;")
                 ->write("\$value = isset({$array}[{$index}]) ? {$array}[{$index}] : null;")
@@ -269,15 +279,32 @@ class TreeCompiler
         );
     }
 
+
+    private function subDispatch($variable, $expr) {
+        $outerValue = $this->makeVar("outerValue");
+
+        return $this->write("$outerValue = \$value;")
+            ->dispatch($expr)
+            ->write("$variable = \$value;")
+            ->write("\$value = $outerValue;");
+    }
+
     private function visit_slice(array $node)
     {
+        $array = $this->makeVar("array");
+        $from = $this->makeVar("from");
+        $to = $this->makeVar("to");
+        $step = $this->makeVar("step");
+
+        $fromExpr = $node['children']['from'];
+        $toExpr = $node['children']['to'];
+        $stepExpr = $node['children']['step'];
         return $this
+            ->subDispatch($from, $fromExpr)
+            ->subDispatch($to, $toExpr)
+            ->subDispatch($step, $stepExpr)
             ->write('$value = !is_string($value) && !Utils::isArray($value)')
-            ->write('    ? null : Utils::slice($value, %s, %s, %s);',
-                var_export($node['value'][0], true),
-                var_export($node['value'][1], true),
-                var_export($node['value'][2], true)
-            );
+            ->write("    ? null : Utils::slice(\$value, $from, $to, $step);");
     }
 
     private function visit_current(array $node)

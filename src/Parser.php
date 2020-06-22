@@ -15,7 +15,8 @@ class Parser
     private $token;
     private $tpos;
     private $expression;
-    private static $nullToken = ['type' => T::T_EOF];
+    private static $nullNode = ['type' => 'null'];
+    private static $eofToken = ['type' => T::T_EOF];
     private static $currentNode = ['type' => T::T_CURRENT];
 
     private static $bp = [
@@ -52,7 +53,7 @@ class Parser
         T::T_IDENTIFIER        => true, // foo.bar
         T::T_QUOTED_IDENTIFIER => true, // foo."bar"
         T::T_STAR              => true, // foo.*
-        T::T_LBRACE            => true, // foo[1]
+        T::T_LBRACE            => true, // foo.[1]
         T::T_LBRACKET          => true, // foo{a: 0}
         T::T_FILTER            => true, // foo.[?bar==10]
         T::T_NUMBER            => true,
@@ -270,36 +271,60 @@ class Parser
         $type1 = $this->token['type'];
         if ($type1 == T::T_STAR) {
             return $this->parseWildcardArray($left);
+        };
+        $nextExpr = $type1 === T::T_COLON ? self::$nullNode : $this->expr(0);
+        if ($nextExpr['type'] == 'field') {
+            $nextExpr['type'] = 'literal';
         }
-        ;
-        $nextExpr = $type1 === T::T_COLON ? null : $this->expr(0);
         $right = [
             'type' => 'index',
-            'children' => [$nextExpr]
+            'value' => $nextExpr
         ];
 
         if ($this->token['type'] === T::T_COLON) {
-            $parts[] = $nextExpr;
+            $children['from'] = $nextExpr;
+            $children['to'] = self::$nullNode;
+            $children['step'] = self::$nullNode;
             $this->next();
             $type2 = $this->token['type'];
-            $parts[] = ($type2 === T::T_COLON || $type2 === T::T_RBRACKET) ? null : $this->expr
-            (0);
+            $children['to'] = ($type2 === T::T_COLON || $type2 === T::T_RBRACKET) ? self::$nullNode : $this->expr(0);
             if ($this->token['type'] === T::T_COLON) {
                 $this->next();
-                $parts[] = $this->token['type'] === T::T_RBRACKET ? null : $this->expr(0);
+                $children['step'] = $this->token['type'] === T::T_RBRACKET ? self::$nullNode : $this->expr(0);
             }
             if ($this->token['type'] !== T::T_RBRACKET) {
                 throw $this->syntax('Unclosed `[`');
             }
             $this->next();
             $right = [
-                'type'     => 'projection',
-                'from'     => 'array',
+                'type' => 'projection',
+                'from' => 'array',
                 'children' => [
-                    ['type' => 'slice', 'children' => $parts],
+                    ['type' => 'slice', 'children' => $children],
                     $this->parseProjection(self::$bp[T::T_STAR])
                 ]
             ];
+        } elseif ($this->token['type'] === T::T_COMMA) {
+            $children = [$right];
+
+            while ($this->token['type'] === T::T_COMMA) {
+                $this->next();
+                $nextExpr = $this->expr(0);
+                $itemNode = [
+                    'type' => 'index',
+                    'value' => $nextExpr
+                ];
+                $children[] = $itemNode;
+            } ;
+            $right = [
+                'type' => 'multi_select_list',
+                'children' => $children
+            ];
+            if ($this->token['type'] !== T::T_RBRACKET) {
+                throw $this->syntax('Unclosed `[`');
+            }
+            $this->next();
+
         } else {
             if ($this->token['type'] !== T::T_RBRACKET) {
                 throw $this->syntax('Unclosed `[`');
@@ -599,7 +624,7 @@ class Parser
     private function next(array $match = null)
     {
         if (!isset($this->tokens[$this->tpos + 1])) {
-            $this->token = self::$nullToken;
+            $this->token = self::$eofToken;
         } else {
             $this->token = $this->tokens[++$this->tpos];
         }

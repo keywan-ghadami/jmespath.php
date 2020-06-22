@@ -38,12 +38,44 @@
      ]
   },
   {
+    "given":
+        {"foo": {"bar": ["zero", "one", "two"]}},
+     "cases": [
+         {
+            "expression": "foo.bar[0,1]",
+            "result": ["zero","one"]
+         },
+         {
+            "expression": "foo.bar[1,0]",
+            "result": ["one","zero"]
+         },
+         {
+            "expression": "foo.bar[-3,2]",
+            "result": ["zero","two"]
+         },
+         {
+            "expression": "foo.bar[-4,-3]",
+            "result": [null,"zero"]
+         }
+     ]
+  },
+  {
     "comment": "object child access on arrays",
     "given": [[],[],[],[{"a": "a"},{"b": "b"}]],
     "cases": [
       {
         "expression": "$.3.1",
-        "result": "b",
+        "result": {"b": "b"}
+      }
+    ]
+  },
+  {
+    "comment": "index expression",
+    "given": [[],[],[],[{"true":"true", ",a": "a"},{"b": "b"}]],
+    "cases": [
+      {
+        "expression": "foo[bar==baz]",
+        "result": null
       }
     ]
   },
