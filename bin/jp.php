@@ -49,9 +49,13 @@ if (isset($args['file']) || isset($args['suite']) || isset($args['case'])) {
     // Manually run a compliance test
     $path = realpath($args['file']);
     file_exists($path) or die('File not found at ' . $path);
+    $assoc = $args['assoc'] === "true" ? true : false;
     $json = json_decode(file_get_contents($path), true);
     $set = $json[$args['suite']];
     $data = $set['given'];
+    if (!$assoc) {
+        $data = json_decode(json_encode($data), false);
+    }
     if (!isset($expression)) {
         $expression = $set['cases'][$args['case']]['expression'];
         echo "Expects\n=======\n";

@@ -192,13 +192,17 @@ class TreeCompiler
         $index = $this->makeVar('index');
         $array = $this->makeVar('array');
         return $this
-            ->write('if (is_array($value) || ($value instanceof \\ArrayAccess && $value instanceof \\Countable)) {')
+            ->write('%s = $value;', $array)
+            ->dispatch($node['value'])
+            ->write("$index = \$value;")
+            ->write("if (is_array($array) || ($array instanceof \\ArrayAccess && $array instanceof \\Countable)) {")
                 ->indent()
-                ->write('%s = $value;', $array)
-                ->dispatch($node['value'])
-                ->write("$index = \$value;")
                 ->write("$index = $index < 0 ? count($array) + $index : $index;")
                 ->write("\$value = isset({$array}[{$index}]) ? {$array}[{$index}] : null;")
+                ->outdent()
+            ->write("} elseif (is_object($array)) {")
+                ->indent()
+                ->write("\$value = isset({$array}->{{$index}}) ? {$array}->{{$index}} : null;")
                 ->outdent()
             ->write('} else {')
                 ->indent()
